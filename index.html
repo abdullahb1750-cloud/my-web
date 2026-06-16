@@ -67,6 +67,22 @@
             from { transform: translateY(-100%); opacity: 0; }
             to   { transform: translateY(0);     opacity: 1; }
         }
+           .sticky-btn {
+  position: fixed;   /* This is the magic line that keeps it from scrolling */
+  bottom: 20px;      /* Distance from the bottom of the screen */
+  right: 20px;       /* Distance from the right side of the screen */
+  
+  /* Styling to make it look like a nice button */
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  z-index: 1000;     /* Ensures the button stays on top of other content */
+           }
+           
 
         .logo {
             font-weight: 800;
