@@ -60,12 +60,24 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            animation: slideDown 0.5s ease both;
+            
+        }
+        header.isactive
+        {
+            animation: slideDown 0.5s ease-in-out forwards;
+        }
+        header.nonactive
+        {
+            animation: slideUp 0.5s ease-in-out  forwards;
         }
 
         @keyframes slideDown {
             from { transform: translateY(-100%); opacity: 0; }
             to   { transform: translateY(0);     opacity: 1; }
+        }
+        @keyframes slideUp {
+            from   { transform: translateY(0);     opacity: 1; }
+            to { transform: translateY(-100%); opacity: 0; }
         }
         .sticky-btn {
             position: fixed;   /* This is the magic line that keeps it from scrolling */
@@ -74,12 +86,12 @@
   
             /* Styling to make it look like a nice button */
             padding: 12px 24px;
-            background-color: rgba(92, 145, 178,0.3);
-            webkit-backdrop-filter: blur(3px);
+            background-color: rgba(102, 155, 188,0.3);
             backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(100px);
             border: none;
             border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             z-index: 1000;     /* Ensures the button stays on top of other content */
            }
@@ -273,7 +285,7 @@
 </head>
 <body>
 
-    <header>
+    <header id="myNavbar">
         <div class="logo">Mar<span>gim</span></div>
         <nav>
             <a href="/">Home</a>
@@ -315,6 +327,6 @@
     <footer>
         &copy; 2026 <strong>Margim</strong>. Developed by Abdullah.
     </footer>
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>      
