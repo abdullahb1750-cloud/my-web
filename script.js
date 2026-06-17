@@ -1,16 +1,18 @@
 let lastScrollTop = 0;
-const navbar = document.getElementById("myNavbar"); // Grab your HTML navbar
+const element = document.getElementById("myNavbar");
 
-window.addEventListener("scroll", function() {
+window.addEventListener("scroll", () => {
   let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
   if (currentScroll > lastScrollTop) {
-    // Scrolling Down -> Hide the navbar
-    navbar.style.top = "-60px"; 
+    // Scrolling Down -> Play forward class
+    element.classList.remove("isactive");
+    element.classList.add("nonactive");
   } else {
-    // Scrolling Up -> Show the navbar
-    navbar.style.top = "0";  
+    // Scrolling Up -> Play reverse class
+    element.classList.remove("nonactive");
+    element.classList.add("isactive");
   }
-  
+
   lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
 });
