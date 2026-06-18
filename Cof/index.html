@@ -1,241 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AICT Project Report - CaféBill Pro</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            line-height: 1.6;
-            background-color: #f8f8f8;
-        }
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 900px;
-            margin: auto;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        h1, h2, h3 {
-            color: #5C4033;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        hr {
-            margin: 20px 0;
-        }
-
-        ul {
-            margin-left: 20px;
-        }
-
-        .cover {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .section {
-            margin-top: 25px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee Billing - Online</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f5f1eb; margin: 0; padding: 20px; }
+ .container { max-width: 700px; margin: auto; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  h1 { text-align: center; color: #4b2e1a; margin-bottom: 10px; }
+ .coffee-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #e0d7cd; border-radius: 10px; margin-bottom: 10px; background: #faf7f3; }
+ .coffee-info { flex: 1; }
+ .coffee-name { font-weight: 600; color: #3b2310; }
+ .sizes { display: flex; gap: 8px; margin-top: 6px; }
+ .sizes label { font-size: 13px; cursor: pointer; }
+ .qty { width: 60px; padding: 4px; border-radius: 6px; border: 1px solid #ccc; }
+  button { background: #6f4e37; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; }
+  button:hover { background: #5a3e2b; }
+ .bill { margin-top: 25px; padding: 15px; border-radius: 10px; background: #f0e8df; display: none; }
+ .bill h2 { margin-top: 0; color: #4b2e1a; }
+ .bill-item { display: flex; justify-content: space-between; margin: 6px 0; }
+ .total { font-weight: bold; font-size: 18px; border-top: 2px solid #c9b8a5; padding-top: 8px; margin-top: 8px; }
+</style>
 </head>
-
 <body>
-
 <div class="container">
+  <h1>☕ Coffee Billing</h1>
+  <p style="text-align:center; color:#666; margin-top:-5px;">Select coffee, size & quantity</p>
 
-    <div class="cover">
-        <h1>AICT Project Report</h1>
-        <h2>CaféBill Pro</h2>
-        <h3>Coffee Shop Billing System</h3>
+  <div id="menu"></div>
 
-        <p><strong>Subject:</strong> Applications of Information and Communication Technology (AICT)</p>
+  <button onclick="generateBill()">Generate Bill</button>
 
-        <p><strong>Prepared By:</strong> ____________________</p>
-        <p><strong>Roll Number:</strong> ____________________</p>
-        <p><strong>Semester:</strong> ____________________</p>
-        <p><strong>Department:</strong> ____________________</p>
-
-        <p><strong>Submitted To:</strong> ____________________</p>
-        <p><strong>Submission Date:</strong> ____________________</p>
-    </div>
-
-    <hr>
-
-    <div class="section">
-        <h2>1. Introduction</h2>
-        <p>
-            CaféBill Pro is a web-based Coffee Shop Billing System developed to
-            automate billing and order management processes in a coffee shop.
-            The system allows users to create bills quickly, calculate totals
-            automatically, and improve customer service efficiency.
-        </p>
-    </div>
-
-    <div class="section">
-        <h2>2. Objectives</h2>
-        <ul>
-            <li>Automate the coffee shop billing process.</li>
-            <li>Reduce human calculation errors.</li>
-            <li>Save time during billing and order management.</li>
-            <li>Provide an easy-to-use interface.</li>
-            <li>Improve customer satisfaction.</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>3. Problem Statement</h2>
-        <p>
-            Traditional billing systems require manual calculations which can
-            result in mistakes and delays. CaféBill Pro provides a digital
-            solution to generate accurate bills efficiently.
-        </p>
-    </div>
-
-    <div class="section">
-        <h2>4. Scope of the Project</h2>
-        <ul>
-            <li>Coffee Shops</li>
-            <li>Cafés</li>
-            <li>Snack Bars</li>
-            <li>Small Restaurants</li>
-            <li>Beverage Outlets</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>5. Features of CaféBill Pro</h2>
-
-        <h3>Menu Management</h3>
-        <ul>
-            <li>Display available items.</li>
-            <li>Show prices of products.</li>
-        </ul>
-
-        <h3>Order Processing</h3>
-        <ul>
-            <li>Select multiple items.</li>
-            <li>Add quantities.</li>
-            <li>Automatic total calculation.</li>
-        </ul>
-
-        <h3>Billing System</h3>
-        <ul>
-            <li>Generate bills instantly.</li>
-            <li>Display subtotal and grand total.</li>
-        </ul>
-
-        <h3>User-Friendly Interface</h3>
-        <ul>
-            <li>Simple navigation.</li>
-            <li>Attractive design.</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>6. Technologies Used</h2>
-
-        <h3>Front-End</h3>
-        <ul>
-            <li>HTML</li>
-            <li>CSS</li>
-            <li>JavaScript</li>
-        </ul>
-
-        <h3>Development Tools</h3>
-        <ul>
-            <li>Visual Studio Code</li>
-            <li>Google Chrome</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>7. System Requirements</h2>
-
-        <h3>Hardware Requirements</h3>
-        <ul>
-            <li>Computer or Laptop</li>
-            <li>Keyboard and Mouse</li>
-            <li>Internet Connection (Optional)</li>
-        </ul>
-
-        <h3>Software Requirements</h3>
-        <ul>
-            <li>Windows Operating System</li>
-            <li>Web Browser</li>
-            <li>VS Code</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>8. Working of the System</h2>
-        <ol>
-            <li>User opens CaféBill Pro website.</li>
-            <li>Menu items are displayed.</li>
-            <li>Cashier selects desired items.</li>
-            <li>Quantities are entered.</li>
-            <li>Total bill is calculated automatically.</li>
-            <li>Bill is generated instantly.</li>
-            <li>Customer completes payment.</li>
-        </ol>
-    </div>
-
-    <div class="section">
-        <h2>9. Advantages</h2>
-        <ul>
-            <li>Fast billing process.</li>
-            <li>Accurate calculations.</li>
-            <li>Easy to use.</li>
-            <li>Saves time.</li>
-            <li>Improves customer service.</li>
-            <li>Reduces paperwork.</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>10. Future Enhancements</h2>
-        <ul>
-            <li>User Authentication System</li>
-            <li>Online Ordering</li>
-            <li>Customer Database</li>
-            <li>Sales Reports</li>
-            <li>QR Code Payments</li>
-            <li>Inventory Management</li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>11. Conclusion</h2>
-        <p>
-            CaféBill Pro is an effective web-based billing solution for coffee
-            shops. It reduces manual work, minimizes billing errors, and
-            improves operational efficiency. The project demonstrates the
-            practical application of Information and Communication Technology
-            in business automation.
-        </p>
-    </div>
-
-    <div class="section">
-        <h2>References</h2>
-        <ol>
-            <li>HTML Documentation</li>
-            <li>CSS Documentation</li>
-            <li>JavaScript Documentation</li>
-            <li>AICT Course Notes</li>
-            <li>Web Development Learning Resources</li>
-        </ol>
-    </div>
-
+  <div id="bill" class="bill"></div>
 </div>
 
+<script>
+const coffees = [
+  { name: "Espresso", prices: { S: 150, M: 200, L: 250 } },
+  { name: "Americano", prices: { S: 180, M: 230, L: 280 } },
+  { name: "Cappuccino", prices: { S: 220, M: 270, L: 320 } },
+  { name: "Latte", prices: { S: 230, M: 280, L: 330 } },
+  { name: "Mocha", prices: { S: 250, M: 300, L: 350 } },
+  { name: "Caramel Macchiato", prices: { S: 260, M: 310, L: 360 } },
+  { name: "Cold Brew", prices: { S: 200, M: 250, L: 300 } }
+];
+
+const menuDiv = document.getElementById('menu');
+
+// Render coffee menu
+coffees.forEach((c, i) => {
+  menuDiv.innerHTML += `
+    <div class="coffee-card">
+      <div class="coffee-info">
+        <div class="coffee-name">${c.name}</div>
+        <div class="sizes">
+          <label><input type="radio" name="size${i}" value="S"> S Rs${c.prices.S}</label>
+          <label><input type="radio" name="size${i}" value="M" checked> M Rs${c.prices.M}</label>
+          <label><input type="radio" name="size${i}" value="L"> L Rs${c.prices.L}</label>
+        </div>
+      </div>
+      <input type="number" min="0" value="0" class="qty" id="qty${i}" placeholder="Qty">
+    </div>
+  `;
+});
+
+function generateBill() {
+  let items = [];
+  let total = 0;
+
+  coffees.forEach((c, i) => {
+    const qty = parseInt(document.getElementById(`qty${i}`).value) || 0;
+    const size = document.querySelector(`input[name="size${i}"]:checked`).value;
+    if (qty > 0) {
+      const price = c.prices[size];
+      const subtotal = price * qty;
+      total += subtotal;
+      items.push({ name: c.name, size, qty, price, subtotal });
+    }
+  });
+
+  const billDiv = document.getElementById('bill');
+  if (items.length === 0) {
+    billDiv.innerHTML = "<p style='color:red'>Please select at least 1 coffee with quantity</p>";
+    billDiv.style.display = 'block';
+    return;
+  }
+
+  let billHTML = `<h2>🧾 Your Bill</h2>`;
+  items.forEach(it => {
+    billHTML += `<div class="bill-item"><span>${it.name} - ${it.size} x ${it.qty}</span><span>Rs ${it.subtotal}</span></div>`;
+  });
+  billHTML += `<div class="bill-item total"><span>Total</span><span>Rs ${total}</span></div>`;
+  billHTML += `<button onclick="window.print()">Print / Save PDF</button>`;
+
+  billDiv.innerHTML = billHTML;
+  billDiv.style.display = 'block';
+  billDiv.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
 </body>
-          </html>
+</html>
