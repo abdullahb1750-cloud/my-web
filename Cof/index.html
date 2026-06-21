@@ -3,266 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E30 2D Scene</title>
+<title>E30 Mountain Pass | Perspective Scroll</title>
 <style>
-  /* Base Reset & Variables */
-  body, html {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    background-color: #87CEEB; /* Sky Blue */
-    transition: background-color 0.8s ease-out;
-  }
+/* -----------------------------------------------------------
+   1. Base Setup & Variables
+   We define a very tall page to allow for deep scrolling.
+----------------------------------------------------------- */
+:root {
+  --sky-blue: #76a5af; /* Soft, slightly hazy blue */
+  --grass-green: #385e3c;
+  --road-grey: #404040;
+  --rock-brown: #5c4b3c;
+}
 
-  /* This container provides the actual scrolling length to the webpage */
-  .scroll-space {
-    height: 250vh; 
-  }
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  /* This height controls the scrolling distance needed to reach bottom */
+  height: 400vh; 
+  font-family: sans-serif;
+  overflow-x: hidden;
+  background: var(--rock-brown); /* The final deep color */
+}
 
-  /* The Camera acts as the fixed viewport window */
-  .camera {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-  }
+/* -----------------------------------------------------------
+   2. Container and Parallax Setup
+----------------------------------------------------------- */
+/* Fixed container keeps elements visible even when page scrolls */
+.fixed-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  /* The World contains the above-ground and underground layers */
-  .world {
-    position: absolute;
-    width: 100%;
-    height: 200vh; /* 100vh for above ground, 100vh for underground */
-    top: 0;
-    transition: transform 0.1s linear;
-  }
+/* World translates everything up/down based on scroll position */
+.world-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* Important: world itself is the size of the viewport */
+  will-change: transform;
+}
 
-  /* --- ABOVE GROUND SCENE --- */
-  .above-ground {
-    height: 100vh;
-    position: relative;
-  }
+/* We create depth layers using absolute positioning and perspective */
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 
-  /* Sky and Moving Clouds */
-  .sky {
-    height: 60vh;
-    position: relative;
-  }
-  .cloud {
-    position: absolute;
-    background: #ffffff;
-    border-radius: 50px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-  }
-  .cloud::before, .cloud::after {
-    content: '';
-    position: absolute;
-    background: #ffffff;
-    border-radius: 50%;
-  }
-  .cloud1 {
-    width: 120px; height: 40px; top: 15%;
-    animation: drift 25s linear infinite;
-  }
-  .cloud1::before { width: 60px; height: 60px; top: -30px; left: 15px; }
-  .cloud1::after { width: 40px; height: 40px; top: -15px; right: 15px; }
+/* -----------------------------------------------------------
+   3. The Overground Scene (Mountains, Clouds, Car)
+----------------------------------------------------------- */
+.overground {
+  perspective: 1000px; /* Essential for 3D perspective effect */
+}
 
-  .cloud2 {
-    width: 160px; height: 50px; top: 35%; opacity: 0.8;
-    animation: drift 40s linear infinite;
-  }
-  .cloud2::before { width: 70px; height: 70px; top: -35px; left: 20px; }
-  .cloud2::after { width: 50px; height: 50px; top: -20px; right: 25px; }
+/* A. Sky and Clouds */
+.sky-layer {
+  background: linear-gradient(to bottom, var(--sky-blue), #ffffff 80%);
+  z-index: -3;
+}
 
-  @keyframes drift {
-    0% { left: -200px; }
-    100% { left: 100vw; }
-  }
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50px;
+  filter: blur(15px); /* Softens clouds for realism */
+  animation: drift linear infinite;
+  opacity: 0.8;
+}
+.cloud::after, .cloud::before {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: inherit;
+}
+.cloud1 { width: 400px; height: 120px; top: 10%; left: 10%; animation-duration: 120s; }
+.cloud1::after { width: 150px; height: 150px; top: -70px; left: 50px; }
+.cloud2 { width: 300px; height: 90px; top: 25%; left: 60%; animation-duration: 90s; opacity: 0.5; }
+.cloud2::after { width: 100px; height: 100px; top: -50px; left: 30px; }
 
-  /* Ground and Road */
-  .ground {
-    height: 40vh;
-    background: #4caf50; /* Grass green */
-    border-top: 6px solid #2e7d32;
-    position: relative;
-  }
-  .road {
-    height: 20vh;
-    background: #424242; /* Asphalt */
-    position: absolute;
-    bottom: 5vh;
-    width: 100%;
-    border-top: 3px solid #757575;
-    border-bottom: 3px solid #757575;
-  }
-  .road-lines {
-    width: 100%;
-    border-top: 5px dashed #ffffff;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+@keyframes drift {
+  0% { transform: translateX(-100%) translateY(0); }
+  50% { transform: translateX(50%) translateY(10px); }
+  100% { transform: translateX(110vw) translateY(0); }
+}
 
-  /* --- BMW E30 CSS ART --- */
-  .e30 {
-    position: absolute;
-    bottom: 18vh; /* Parked on the side/grass edge */
-    left: 20vw;
-    width: 260px;
-    height: 80px;
-    z-index: 10;
-  }
-  
-  /* Boxy classic chassis */
-  .car-body {
-    position: absolute;
-    bottom: 20px;
-    width: 260px;
-    height: 45px;
-    background: #d32f2f; /* Classic red */
-    border-radius: 5px 20px 5px 5px;
-    box-shadow: inset 0 -10px 0 rgba(0,0,0,0.2);
-  }
-  .car-top {
-    position: absolute;
-    bottom: 65px;
-    left: 60px;
-    width: 110px;
-    height: 30px;
-    background: #d32f2f;
-    border-radius: 10px 5px 0 0;
-  }
-  .windows {
-    position: absolute;
-    bottom: 65px;
-    left: 65px;
-    width: 100px;
-    height: 25px;
-    background: #e0f7fa;
-    border-radius: 8px 3px 0 0;
-  }
-  .pillar {
-    position: absolute;
-    bottom: 65px;
-    left: 110px;
-    width: 10px;
-    height: 25px;
-    background: #d32f2f;
-  }
-  
-  /* Wheels */
-  .wheel {
-    position: absolute;
-    bottom: 5px;
-    width: 45px;
-    height: 45px;
-    background: #111;
-    border-radius: 50%;
-    border: 4px solid #bdbdbd; /* Alloys */
-    box-shadow: inset 0 0 10px #000;
-  }
-  .wheel.front { left: 35px; }
-  .wheel.rear { right: 40px; }
+/* B. Mountains and Ground */
+.mountains {
+  background: repeating-linear-gradient(130deg, transparent, transparent 20px, rgba(0,0,0,0.05) 20px, rgba(0,0,0,0.05) 40px),
+              linear-gradient(160deg, #81989c 20%, var(--grass-green) 100%);
+  z-index: -2;
+}
 
-  /* Blinker & Animation */
-  .blinker {
-    position: absolute;
-    bottom: 45px;
-    left: 8px; /* Front side marker */
-    width: 12px;
-    height: 8px;
-    background: #ff9800;
-    border-radius: 3px;
-    animation: blink 0.5s infinite alternate;
-  }
+/* Distant peaks, slight haziness */
+.peak-layer {
+  position: absolute;
+  width: 100%; height: 50%;
+  top: 15%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" preserveAspectRatio="none"><path d="M0,150 L100,80 L250,160 L400,60 L550,140 L700,90 L850,170 L1000,100 L1000,300 L0,300 Z" fill="%235a787c" opacity="0.6"/></svg>');
+  background-size: cover;
+}
 
-  @keyframes blink {
-    0%, 20% { opacity: 0; box-shadow: none; }
-    80%, 100% { opacity: 1; box-shadow: 0 0 15px 5px rgba(255, 152, 0, 0.8); }
-  }
+/* The grass plane: tilted for perspective */
+.ground-plane {
+  position: absolute;
+  bottom: 0;
+  width: 150%; height: 60%;
+  left: -25%;
+  background: var(--grass-green);
+  border-top: 10px solid #2d4d30;
+  transform: rotateX(60deg) translateZ(-200px); /* Tilts the ground *towards* viewer */
+  z-index: -1;
+}
 
-  /* --- UNDERGROUND SCENE --- */
-  .underground {
-    height: 100vh;
-    background: #0f0f0f;
-    position: relative;
-    border-top: 15px solid #3e2723; /* Dirt crust */
-  }
-  
-  .dirt-texture {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-image: radial-gradient(#221 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.3;
-  }
-  .roots {
-    position: absolute;
-    top: 0; left: 25vw; width: 5px; height: 100px;
-    background: #5d4037;
-    border-radius: 0 0 10px 10px;
-  }
+/* C. The Road and Stone Barrier */
+.road-layer {
+  position: absolute;
+  bottom: 5vh;
+  left: 0;
+  width: 100%;
+  height: 25vh;
+  background: var(--road-grey);
+  border-top: 5px solid #333;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 1;
+}
+.road-lines {
+  position: absolute;
+  width: 100%; height: 4px;
+  top: 50%;
+  background: repeating-linear-gradient(to right, transparent, transparent 50px, #ffffff 50px, #ffffff 100px);
+}
+.stone-barrier {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 6vh;
+  background-color: #7d7367;
+  background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                    linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%);
+  background-size: 20px 20px;
+}
+
+/* D. The E30 Illustration (More Detailed, 3/4 Perspective) */
+.e30 {
+  position: absolute;
+  bottom: 10vh; /* Adjust base height */
+  left: 20vw;
+  width: 380px; /* Larger, detailed *illustration* style */
+  height: 180px;
+  z-index: 10;
+  transform: translateZ(50px); /* Pop it in front */
+}
+.e30 img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(5px 10px 20px rgba(0,0,0,0.6));
+}
+
+/* Dynamic Blinker Effect */
+.blinker-glow {
+  position: absolute;
+  top: 48%; /* Adjust to where the blinker is located on the image */
+  right: 7%;
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 165, 0, 0.8);
+  border-radius: 50%;
+  filter: blur(8px);
+  animation: blink 0.6s infinite alternate;
+  z-index: 11;
+}
+
+@keyframes blink {
+  0%, 10% { opacity: 0; }
+  90%, 100% { opacity: 1; box-shadow: 0 0 20px 5px #ffa500; }
+}
+
+/* -----------------------------------------------------------
+   4. The Underground Scene (Plunge down and Black)
+----------------------------------------------------------- */
+.underground {
+  position: absolute;
+  top: 100vh; /* Starts exactly where overground ends */
+  width: 100%;
+  height: 200vh; /* Make this layer tall for deep darkness */
+  background: linear-gradient(to bottom, #2b2016 0%, #1a1510 30%, #000000 60%);
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* Realistic Dirt, Roots, and Stone textures */
+.underground::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23n)" opacity="0.3"/></svg>');
+  background-size: 300px;
+  opacity: 0.4;
+}
+
+.root {
+  position: absolute;
+  background: #4a3b2b;
+  border-radius: 5px;
+}
+.root1 { width: 8px; height: 30vh; top: 0; left: 15%; opacity: 0.6; }
+.root2 { width: 12px; height: 50vh; top: 10vh; left: 60%; transform: rotate(10deg); opacity: 0.5;}
+.rock {
+  position: absolute;
+  background: #3c3228;
+  border-radius: 10px;
+}
+.rock1 { width: 100px; height: 60px; top: 20vh; left: 80%; }
+.rock2 { width: 150px; height: 90px; top: 45vh; left: 10%; transform: rotate(-20deg);}
 
 </style>
 </head>
 <body>
 
-  <div class="scroll-space"></div>
-
-  <div class="camera">
-    <div class="world" id="world">
+  <div class="fixed-container">
+    
+    <div class="world-container" id="world">
       
-      <div class="above-ground">
-        <div class="sky">
+      <div class="layer overground">
+        <div class="sky-layer">
           <div class="cloud cloud1"></div>
           <div class="cloud cloud2"></div>
         </div>
-        <div class="ground">
-          <div class="road">
-            <div class="road-lines"></div>
-          </div>
-          
-          <div class="e30">
-            <div class="car-top"></div>
-            <div class="windows"></div>
-            <div class="pillar"></div>
-            <div class="car-body"></div>
-            <div class="blinker"></div>
-            <div class="wheel front"></div>
-            <div class="wheel rear"></div>
-          </div>
+        
+        <div class="peak-layer"></div>
+        <div class="ground-plane"></div>
+
+        <div class="road-layer">
+          <div class="stone-barrier"></div>
+          <div class="road-lines"></div>
+        </div>
+
+        <div class="e30">
+          <div class="blinker-glow"></div>
+          <img src="https://img00.deviantart.net/b784/i/2016/161/a/1/bmw_e30_m3_by_k_atze-da5p73x.png" alt="BMW E30 Illustration, 3/4 perspective">
         </div>
       </div>
 
-      <div class="underground">
-        <div class="dirt-texture"></div>
-        <div class="roots"></div>
-        <div class="roots" style="left: 70vw; height: 150px; width: 8px;"></div>
+      <div class="layer underground">
+        <div class="root root1"></div>
+        <div class="root root2"></div>
+        <div class="rock rock1"></div>
+        <div class="rock rock2"></div>
       </div>
 
     </div>
   </div>
 
   <script>
-    // Logic to move the camera down (world up) on scroll
+    // Parallax logic: translate the entire world as the user scrolls.
+    const world = document.getElementById('world');
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+
     window.addEventListener('scroll', () => {
       const scrollY = window.scrollY;
-      
-      // Calculate how far down the page the user has scrolled
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollFraction = scrollY / maxScroll;
+      const scrollFraction = scrollY / scrollHeight;
 
-      // Translate the world layer up (Max 100vh to fully show the underground)
-      const world = document.getElementById('world');
-      world.style.transform = `translateY(-${scrollFraction * 100}vh)`;
-
-      // Turn the background black when the camera dips beneath the surface
-      if (scrollFraction > 0.4) {
-        document.body.style.backgroundColor = '#0f0f0f';
-      } else {
-        document.body.style.backgroundColor = '#87CEEB';
-      }
+      // We translate the entire world UP by up to 200vh
+      // This makes the underground layer move into view.
+      const translateY = -200 * scrollFraction;
+      world.style.transform = `translateY(${translateY}vh)`;
     });
   </script>
 </body>
