@@ -3,24 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Isometric Cube Scroll</title>
+    <title>2D Parallax Camera Pan Effect</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            background-color: #1a1a2e;
+            background-color: #0f172a;
             overflow-x: hidden;
-            font-family: sans-serif;
+            font-family: system-ui, sans-serif;
         }
 
-        /* Creates the scrolling space */
-        .scroll-space {
+        /* Creates a long page to allow for scrolling */
+        .scroll-container {
             height: 300vh;
             position: relative;
         }
 
-        /* Fixed viewport so the flat graphic stays on screen */
-        .viewport-layer {
+        .title {
+            color: #94a3b8;
+            text-align: center;
+            padding-top: 15vh;
+            font-size: 1.25rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Sticky viewport holding our 2D graphic */
+        .viewport {
             position: fixed;
             top: 0;
             left: 0;
@@ -32,49 +41,61 @@
             pointer-events: none;
         }
 
-        /* The 2D SVG Box container */
-        .box-container {
-            width: 200px;
-            height: 200px;
+        /* The Box SVG wrapper */
+        .box-wrapper {
+            width: 300px;
+            height: 300px;
             will-change: transform;
-            transition: transform 0.1s ease-out; /* Smooths out the scroll */
         }
 
-        .text-hint {
-            color: #fff;
-            text-align: center;
-            padding-top: 25vh;
-            letter-spacing: 1px;
-            opacity: 0.6;
+        /* Target individual layers of the 2D SVG for the pan effect */
+        .top-face, .sides {
+            will-change: transform;
+            transition: transform 0.1s ease-out;
         }
     </style>
 </head>
 <body>
 
-    <div class="scroll-space">
-        <h1 class="text-hint">Scroll down to pan the "camera" past the box</h1>
+    <div class="scroll-container">
+        <h1 class="title">Scroll down to pan camera</h1>
 
-        <div class="viewport-layer">
-            <div class="box-container" id="box">
+        <div class="viewport">
+            <div class="box-wrapper" id="boxWrapper">
                 <svg viewBox="0 0 100 100" width="100%" height="100%">
-                    <polygon points="50,15 85,35 50,55 15,35" fill="#0f4c81" opacity="0.9"/>
-                    <polygon points="15,35 50,55 50,90 15,70" fill="#1f3a60"/>
-                    <polygon points="50,55 85,35 85,70 50,90" fill="#162c4e"/>
+                    <g class="sides" id="boxSides">
+                        <polygon points="20,40 50,55 50,85 20,70" fill="#1e293b" stroke="#334155" stroke-width="0.5"/>
+                        <polygon points="50,55 80,40 80,70 50,85" fill="#0f172a" stroke="#334155" stroke-width="0.5"/>
+                    </g>
+                    
+                    <g class="top-face" id="boxTop">
+                        <polygon points="50,25 80,40 50,55 20,40" fill="#38bdf8" opacity="0.85" stroke="#0ea5e9" stroke-width="0.5"/>
+                    </g>
                 </svg>
             </div>
         </div>
     </div>
 
     <script>
-        const box = document.getElementById('box');
+        const boxWrapper = document.getElementById('boxWrapper');
+        const boxTop = document.getElementById('boxTop');
+        const boxSides = document.getElementById('boxSides');
 
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
+
+            // 1. Move the entire box upward as you scroll
+            boxWrapper.style.transform = `translateY(${-scrollY * 0.5}px)`;
+
+            // 2. The Parallax Magic: 
+            // Pushing the "top lid" downwards slightly faster than the rest of the box
+            // changes the 2D perspective line, mimicking a camera panning downward.
+            const panFactor = scrollY * 0.04; 
+            boxTop.style.transform = `translateY(${panFactor}px)`;
             
-            // Moves the 2D box straight up on the Y-axis as you scroll down
-            box.style.transform = `translateY(${-scrollY * 0.7}px)`;
+            // Slightly compress the sides to simulate an shifting viewing angle
+            boxSides.style.transform = `scaleY(${1 - (scrollY * 0.0002)})`;
         });
     </script>
 </body>
 </html>
-
