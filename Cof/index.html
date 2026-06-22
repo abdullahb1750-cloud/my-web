@@ -1,285 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>E30 Mountain Pass | Perspective Scroll</title>
-<style>
-/* -----------------------------------------------------------
-   1. Base Setup & Variables
-   We define a very tall page to allow for deep scrolling.
------------------------------------------------------------ */
-:root {
-  --sky-blue: #76a5af; /* Soft, slightly hazy blue */
-  --grass-green: #385e3c;
-  --road-grey: #404040;
-  --rock-brown: #5c4b3c;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cube Scroll Effect</title>
+    <style>
+        /* Reset basic margins and hide horizontal scrollbar */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #111;
+        }
 
-body, html {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  /* This height controls the scrolling distance needed to reach bottom */
-  height: 400vh; 
-  font-family: sans-serif;
-  overflow-x: hidden;
-  background: var(--rock-brown); /* The final deep color */
-}
+        /* The canvas will be fixed in the background */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
 
-/* -----------------------------------------------------------
-   2. Container and Parallax Setup
------------------------------------------------------------ */
-/* Fixed container keeps elements visible even when page scrolls */
-.fixed-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+        /* Create a tall container to force the browser to scroll */
+        .scroll-container {
+            height: 400vh; /* 4 times the height of the screen */
+            width: 100%;
+        }
 
-/* World translates everything up/down based on scroll position */
-.world-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%; /* Important: world itself is the size of the viewport */
-  will-change: transform;
-}
-
-/* We create depth layers using absolute positioning and perspective */
-.layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* -----------------------------------------------------------
-   3. The Overground Scene (Mountains, Clouds, Car)
------------------------------------------------------------ */
-.overground {
-  perspective: 1000px; /* Essential for 3D perspective effect */
-}
-
-/* A. Sky and Clouds */
-.sky-layer {
-  background: linear-gradient(to bottom, var(--sky-blue), #ffffff 80%);
-  z-index: -3;
-}
-
-.cloud {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50px;
-  filter: blur(15px); /* Softens clouds for realism */
-  animation: drift linear infinite;
-  opacity: 0.8;
-}
-.cloud::after, .cloud::before {
-  content: '';
-  position: absolute;
-  background: inherit;
-  border-radius: inherit;
-}
-.cloud1 { width: 400px; height: 120px; top: 10%; left: 10%; animation-duration: 120s; }
-.cloud1::after { width: 150px; height: 150px; top: -70px; left: 50px; }
-.cloud2 { width: 300px; height: 90px; top: 25%; left: 60%; animation-duration: 90s; opacity: 0.5; }
-.cloud2::after { width: 100px; height: 100px; top: -50px; left: 30px; }
-
-@keyframes drift {
-  0% { transform: translateX(-100%) translateY(0); }
-  50% { transform: translateX(50%) translateY(10px); }
-  100% { transform: translateX(110vw) translateY(0); }
-}
-
-/* B. Mountains and Ground */
-.mountains {
-  background: repeating-linear-gradient(130deg, transparent, transparent 20px, rgba(0,0,0,0.05) 20px, rgba(0,0,0,0.05) 40px),
-              linear-gradient(160deg, #81989c 20%, var(--grass-green) 100%);
-  z-index: -2;
-}
-
-/* Distant peaks, slight haziness */
-.peak-layer {
-  position: absolute;
-  width: 100%; height: 50%;
-  top: 15%;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" preserveAspectRatio="none"><path d="M0,150 L100,80 L250,160 L400,60 L550,140 L700,90 L850,170 L1000,100 L1000,300 L0,300 Z" fill="%235a787c" opacity="0.6"/></svg>');
-  background-size: cover;
-}
-
-/* The grass plane: tilted for perspective */
-.ground-plane {
-  position: absolute;
-  bottom: 0;
-  width: 150%; height: 60%;
-  left: -25%;
-  background: var(--grass-green);
-  border-top: 10px solid #2d4d30;
-  transform: rotateX(60deg) translateZ(-200px); /* Tilts the ground *towards* viewer */
-  z-index: -1;
-}
-
-/* C. The Road and Stone Barrier */
-.road-layer {
-  position: absolute;
-  bottom: 5vh;
-  left: 0;
-  width: 100%;
-  height: 25vh;
-  background: var(--road-grey);
-  border-top: 5px solid #333;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  z-index: 1;
-}
-.road-lines {
-  position: absolute;
-  width: 100%; height: 4px;
-  top: 50%;
-  background: repeating-linear-gradient(to right, transparent, transparent 50px, #ffffff 50px, #ffffff 100px);
-}
-.stone-barrier {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  width: 100%;
-  height: 6vh;
-  background-color: #7d7367;
-  background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
-                    linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%);
-  background-size: 20px 20px;
-}
-
-/* D. The E30 Illustration (More Detailed, 3/4 Perspective) */
-.e30 {
-  position: absolute;
-  bottom: 10vh; /* Adjust base height */
-  left: 20vw;
-  width: 380px; /* Larger, detailed *illustration* style */
-  height: 180px;
-  z-index: 10;
-  transform: translateZ(50px); /* Pop it in front */
-}
-.e30 img {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(5px 10px 20px rgba(0,0,0,0.6));
-}
-
-/* Dynamic Blinker Effect */
-.blinker-glow {
-  position: absolute;
-  top: 48%; /* Adjust to where the blinker is located on the image */
-  right: 7%;
-  width: 30px;
-  height: 30px;
-  background: rgba(255, 165, 0, 0.8);
-  border-radius: 50%;
-  filter: blur(8px);
-  animation: blink 0.6s infinite alternate;
-  z-index: 11;
-}
-
-@keyframes blink {
-  0%, 10% { opacity: 0; }
-  90%, 100% { opacity: 1; box-shadow: 0 0 20px 5px #ffa500; }
-}
-
-/* -----------------------------------------------------------
-   4. The Underground Scene (Plunge down and Black)
------------------------------------------------------------ */
-.underground {
-  position: absolute;
-  top: 100vh; /* Starts exactly where overground ends */
-  width: 100%;
-  height: 200vh; /* Make this layer tall for deep darkness */
-  background: linear-gradient(to bottom, #2b2016 0%, #1a1510 30%, #000000 60%);
-  z-index: 2;
-  overflow: hidden;
-}
-
-/* Realistic Dirt, Roots, and Stone textures */
-.underground::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="n" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23n)" opacity="0.3"/></svg>');
-  background-size: 300px;
-  opacity: 0.4;
-}
-
-.root {
-  position: absolute;
-  background: #4a3b2b;
-  border-radius: 5px;
-}
-.root1 { width: 8px; height: 30vh; top: 0; left: 15%; opacity: 0.6; }
-.root2 { width: 12px; height: 50vh; top: 10vh; left: 60%; transform: rotate(10deg); opacity: 0.5;}
-.rock {
-  position: absolute;
-  background: #3c3228;
-  border-radius: 10px;
-}
-.rock1 { width: 100px; height: 60px; top: 20vh; left: 80%; }
-.rock2 { width: 150px; height: 90px; top: 45vh; left: 10%; transform: rotate(-20deg);}
-
-</style>
+        /* Simple text styling */
+        .instructions {
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 50vh;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="fixed-container">
-    
-    <div class="world-container" id="world">
-      
-      <div class="layer overground">
-        <div class="sky-layer">
-          <div class="cloud cloud1"></div>
-          <div class="cloud cloud2"></div>
-        </div>
-        
-        <div class="peak-layer"></div>
-        <div class="ground-plane"></div>
-
-        <div class="road-layer">
-          <div class="stone-barrier"></div>
-          <div class="road-lines"></div>
-        </div>
-
-        <div class="e30">
-          <div class="blinker-glow"></div>
-          <img src="https://img00.deviantart.net/b784/i/2016/161/a/1/bmw_e30_m3_by_k_atze-da5p73x.png" alt="BMW E30 Illustration, 3/4 perspective">
-        </div>
-      </div>
-
-      <div class="layer underground">
-        <div class="root root1"></div>
-        <div class="root root2"></div>
-        <div class="rock rock1"></div>
-        <div class="rock rock2"></div>
-      </div>
-
+    <div class="scroll-container">
+        <div class="instructions">Scroll down to move camera ↓</div>
     </div>
-  </div>
 
-  <script>
-    // Parallax logic: translate the entire world as the user scrolls.
-    const world = document.getElementById('world');
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      const scrollFraction = scrollY / scrollHeight;
+    <script>
+        // 1. Setup Scene, Camera, and Renderer
+        const scene = new THREE.Scene();
+        
+        // Field of view, aspect ratio, near clipping plane, far clipping plane
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-      // We translate the entire world UP by up to 200vh
-      // This makes the underground layer move into view.
-      const translateY = -200 * scrollFraction;
-      world.style.transform = `translateY(${translateY}vh)`;
-    });
-  </script>
+        // 2. Create the 3D Cube
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        
+        // MeshNormalMaterial maps the normal vectors to RGB colors (looks cool without lighting)
+        const material = new THREE.MeshNormalMaterial({ wireframe: false });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        // Add white edges to make the cube shape more distinct
+        const edges = new THREE.EdgesGeometry(geometry);
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 }));
+        cube.add(line);
+
+        // Pull the camera back so we can see the cube
+        camera.position.z = 5;
+
+        // 3. Animation Loop (constantly renders the scene)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Add a slow continuous rotation to make it feel alive
+            cube.rotation.x += 0.005;
+            cube.rotation.y += 0.005;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 4. Handle Scrolling (The Camera Movement)
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            
+            // Move camera down on the Y axis as you scroll down.
+            // (Moving camera down makes the cube appear to move up)
+            camera.position.y = -scrollY * 0.01; 
+            
+            // Optional: If you want the camera to also zoom in/out or move horizontally
+            // camera.position.z = 5 + (scrollY * 0.005); 
+        });
+
+        // 5. Handle Window Resizing
+        window.addEventListener('resize', () => {
+            // Update camera aspect ratio and renderer size when window size changes
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
