@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed 2D Camera Pan Physics</title>
+    <title>Dynamic SVG Hex Column Pan Physics</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            background-color: #0f172a;
+            background-color: #0b0f19;
             overflow-x: hidden;
             font-family: system-ui, sans-serif;
         }
@@ -19,11 +19,11 @@
         }
 
         .title {
-            color: #94a3b8;
+            color: #64748b;
             text-align: center;
-            padding-top: 15vh;
-            font-size: 1.25rem;
-            letter-spacing: 2px;
+            padding-top: 12vh;
+            font-size: 1rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
         }
 
@@ -39,71 +39,85 @@
             pointer-events: none;
         }
 
-        .box-wrapper {
-            width: 300px;
-            height: 300px;
+        .shape-wrapper {
+            width: 320px;
+            height: 320px;
         }
     </style>
 </head>
 <body>
 
     <div class="scroll-container">
-        <h1 class="title">Scroll down: Fixed Pan Physics</h1>
+        <h1 class="title">Scrolling Custom Prism Pan Physics</h1>
 
         <div class="viewport">
-            <div class="box-wrapper">
+            <div class="shape-wrapper">
                 <svg viewBox="0 0 100 100" width="100%" height="100%">
-                    <polygon id="leftWall" fill="#1e293b" stroke="#334155" stroke-width="0.3"/>
-                    <polygon id="rightWall" fill="#0f172a" stroke="#334155" stroke-width="0.3"/>
-                    <polygon id="topLid" fill="#38bdf8" opacity="0.9" stroke="#0ea5e9" stroke-width="0.3"/>
+                    <polygon id="leftPanel" fill="#1e1b4b" stroke="#312e81" stroke-width="0.3"/>
+                    <polygon id="midPanel" fill="#2e1065" stroke="#4c1d95" stroke-width="0.3"/>
+                    <polygon id="rightPanel" fill="#4c1d95" stroke="#5b21b6" stroke-width="0.3"/>
+                    
+                    <polygon id="topCap" fill="#a78bfa" opacity="0.95" stroke="#c084fc" stroke-width="0.3"/>
                 </svg>
             </div>
         </div>
     </div>
 
     <script>
-        // Target our 2D SVG shapes
-        const topLid = document.getElementById('topLid');
-        const leftWall = document.getElementById('leftWall');
-        const rightWall = document.getElementById('rightWall');
+        // DOM Elements
+        const topCap = document.getElementById('topCap');
+        const leftPanel = document.getElementById('leftPanel');
+        const midPanel = document.getElementById('midPanel');
+        const rightPanel = document.getElementById('rightPanel');
 
-        function updateBoxPerspective() {
+        function updatePrismPerspective() {
             const scrollY = window.scrollY;
-            
-            // Normalize scroll progress between 0 and 1
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
             const progress = Math.min(scrollY / maxScroll, 1);
 
-            // Dynamic Geometry calculations based on scroll
-            // As the camera moves down, the 'horizon line' of the cube shifts up.
-            const centerY = 50 - (progress * 15); // Global height translation
-            const lidThickness = 15 - (progress * 10); // Lid narrows as camera matches its height
-            const wallBottom = 85 - (progress * 5); // Bottom adjusts to perspective angle
+            // 1. Perspective Variables (Physics Drivers)
+            // As camera drops, the shape moves up, the cap flattens, and the base angle shifts
+            const centerY = 45 - (progress * 15); 
+            const capFlatten = 14 - (progress * 10); 
+            const lengthY = 35 + (progress * 5); // Bottom perspective stretches slightly
 
-            // Fixed X coordinates for standard isometric proportions
-            const leftX = 20;
-            const centerX = 50;
-            const rightX = 80;
+            // Fixed X Coordinates for a regular hexagon's points
+            const xFarLeft  = 20;
+            const xMidLeft  = 35;
+            const xMidRight = 65;
+            const xFarRight = 80;
 
-            // Calculate precise shared vertex points
-            const ptTop = `${centerX},${centerY - lidThickness}`;
-            const ptLeft = `${leftX},${centerY}`;
-            const ptCenter = `${centerX},${centerY + lidThickness}`;
-            const ptRight = `${rightX},${centerY}`;
-            
-            const ptBottomLeft = `${leftX},${wallBottom}`;
-            const ptBottomCenter = `${centerX},${wallBottom + lidThickness}`;
-            const ptBottomRight = `${rightX},${wallBottom}`;
+            // 2. Compute Mathematical Vertices for the Top Hexagon Cap
+            const t1 = `${xMidLeft},${centerY - capFlatten}`;   // Top-Left Back
+            const t2 = `${xMidRight},${centerY - capFlatten}`;  // Top-Right Back
+            const t3 = `${xFarRight},${centerY}`;              // Top-Far Right
+            const t4 = `${xMidRight},${centerY + capFlatten}`;  // Top-Right Front Seam
+            const t5 = `${xMidLeft},${centerY + capFlatten}`;   // Top-Left Front Seam
+            const t6 = `${xFarLeft},${centerY}`;               // Top-Far Left
 
-            // Map points cleanly back to the 2D SVG polygons without breaking structural integrity
-            topLid.setAttribute('points', `${ptTop} ${ptRight} ${ptCenter} ${ptLeft}`);
-            leftWall.setAttribute('points', `${ptLeft} ${ptCenter} ${ptBottomCenter} ${ptBottomLeft}`);
-            rightWall.setAttribute('points', `${ptCenter} ${ptRight} ${ptBottomRight} ${ptBottomCenter}`);
+            // 3. Compute Matching Bottom Vertices (Perfect Parallel Offsets)
+            const b3 = `${xFarRight},${centerY + lengthY}`;
+            const b4 = `${xMidRight},${centerY + capFlatten + lengthY}`;
+            const b5 = `${xMidLeft},${centerY + capFlatten + lengthY}`;
+            const b6 = `${xFarLeft},${centerY + lengthY}`;
+
+            // 4. Inject Coordinates to update the SVG structure safely
+            // Top Cap Hexagon
+            topCap.setAttribute('points', `${t1} ${t2} ${t3} ${t4} ${t5} ${t6}`);
+
+            // Front-Left Wall Panel
+            leftPanel.setAttribute('points', `${t6} ${t5} ${b5} ${b6}`);
+
+            // Front-Middle Wall Panel
+            midPanel.setAttribute('points', `${t5} ${t4} ${b4} ${b5}`);
+
+            // Front-Right Wall Panel
+            rightPanel.setAttribute('points', `${t4} ${t3} ${b3} ${b4}`);
         }
 
-        // Run on scroll and initial render
-        window.addEventListener('scroll', updateBoxPerspective);
-        updateBoxPerspective();
+        // Event Hookups
+        window.addEventListener('scroll', updatePrismPerspective);
+        updatePrismPerspective(); // Run once initially
     </script>
 </body>
 </html>
