@@ -1,156 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Car Camera Pan</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: #f8fafc;
-            font-family: sans-serif;
-            overflow-x: hidden;
-        }
+  <meta charset="UTF-8">
+  <title>CSS 3D SVG Layers</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #1a1a1a;
+      margin: 0;
+    }
 
-        /* Creates room to scroll */
-        .scroll-track {
-            height: 300vh;
-            position: relative;
-        }
+    .scene {
+      width: 300px;
+      height: 300px;
+      /* Establish 3D space */
+      perspective: 1000px; 
+    }
 
-        .instructions {
-            position: fixed;
-            top: 10%;
-            width: 100%;
-            text-align: center;
-            color: #64748b;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            z-index: 10;
-        }
+    .svg-container {
+      width: 100%;
+      height: 100%;
+      /* Preserve 3D for child elements */
+      transform-style: preserve-3d;
+      /* Tilt the whole SVG to see the 3D effect */
+      transform: rotateX(55deg) rotateZ(45deg);
+      transition: transform 0.5s ease;
+    }
 
-        /* Locks the scene in the center of your screen */
-        .camera-viewport {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
+    .svg-container:hover {
+      transform: rotateX(45deg) rotateZ(20deg);
+    }
 
-        /* Wraps the car and shadow together */
-        .scene-wrapper {
-            position: relative;
-            width: 300px;
-            height: 150px;
-            will-change: transform;
-        }
+    /* Target specific groups in the SVG and move them on the Z-axis */
+    #layer-bottom { transform: translateZ(0px); }
+    #layer-middle { transform: translateZ(40px); }
+    #layer-top { transform: translateZ(80px); }
 
-        /* The SVG Car */
-        .car-svg {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            transform-origin: bottom center;
-            will-change: transform;
-        }
-
-        /* The spinning wheels */
-        .wheel {
-            transform-origin: center;
-            will-change: transform;
-        }
-
-        /* Fake ground shadow for depth */
-        .shadow {
-            position: absolute;
-            bottom: 10px;
-            left: 10%;
-            width: 80%;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 50%;
-            filter: blur(4px);
-            z-index: 1;
-            will-change: transform;
-        }
-    </style>
+    /* Optional: Add drop shadows to emphasize depth */
+    g {
+      filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.5));
+    }
+  </style>
 </head>
 <body>
 
-    <div class="scroll-track">
-        <div class="instructions">Scroll down to pan camera 🚗💨</div>
+  <div class="scene">
+    <svg class="svg-container" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g id="layer-bottom">
+        <rect x="10" y="10" width="180" height="180" fill="#3498db" rx="15"/>
+      </g>
+      
+      <g id="layer-middle">
+        <circle cx="100" cy="100" r="60" fill="#e74c3c"/>
+      </g>
+      
+      <g id="layer-top">
+        <polygon points="100,50 140,140 60,140" fill="#f1c40f"/>
+      </g>
+    </svg>
+  </div>
 
-        <div class="camera-viewport">
-            <div class="scene-wrapper" id="scene">
-                
-                <div class="shadow" id="shadow"></div>
-
-                <svg class="car-svg" id="carBody" viewBox="0 0 200 100">
-                    <path d="M 20,50 L 45,20 L 130,20 L 165,50 L 185,50 L 185,80 L 15,80 L 15,50 Z" fill="#10b981" />
-                    
-                    <path d="M 50,25 L 120,25 L 150,50 L 45,50 Z" fill="#cbd5e1" />
-                    <line x1="95" y1="25" x2="95" y2="50" stroke="#0f172a" stroke-width="4" />
-                    <rect x="175" y="55" width="10" height="10" rx="3" fill="#fbbf24" />
-                    <rect x="15" y="55" width="8" height="12" rx="2" fill="#ef4444" />
-
-                    <g class="wheel" style="transform-origin: 50px 80px;">
-                        <circle cx="50" cy="80" r="16" fill="#1e293b" />
-                        <circle cx="50" cy="80" r="8" fill="#94a3b8" />
-                        <line x1="50" y1="64" x2="50" y2="96" stroke="#f8fafc" stroke-width="2" />
-                        <line x1="34" y1="80" x2="66" y2="80" stroke="#f8fafc" stroke-width="2" />
-                    </g>
-
-                    <g class="wheel" style="transform-origin: 140px 80px;">
-                        <circle cx="140" cy="80" r="16" fill="#1e293b" />
-                        <circle cx="140" cy="80" r="8" fill="#94a3b8" />
-                        <line x1="140" y1="64" x2="140" y2="96" stroke="#f8fafc" stroke-width="2" />
-                        <line x1="124" y1="80" x2="156" y2="80" stroke="#f8fafc" stroke-width="2" />
-                    </g>
-                </svg>
-                
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const scene = document.getElementById('scene');
-        const carBody = document.getElementById('carBody');
-        const shadow = document.getElementById('shadow');
-        const wheels = document.querySelectorAll('.wheel');
-
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = Math.min(scrollY / maxScroll, 1);
-
-            // 1. Camera Pan (Moves the whole scene horizontally across the screen)
-            // Starts off-screen to the right, ends off-screen to the left
-            const panX = 400 - (progress * 800); 
-            scene.style.transform = `translateX(${panX}px)`;
-
-            // 2. 3D Perspective Shift (Skews the car body slightly as it crosses the center)
-            // This tricks the eye into thinking the camera angle is changing
-            const skewAngle = (progress - 0.5) * -15; // Swings from +7.5deg to -7.5deg
-            const scaleY = 1 - Math.abs(progress - 0.5) * 0.1; // Squishes slightly at the edges
-            carBody.style.transform = `skewX(${skewAngle}deg) scaleY(${scaleY})`;
-
-            // 3. Shadow Parallax (Shadow moves slower to create depth)
-            shadow.style.transform = `translateX(${skewAngle * 2}px) scaleX(${scaleY})`;
-
-            // 4. Wheel Rotation (Spins the SVG wheels based on scroll distance)
-            const rotation = scrollY * 0.5;
-            wheels.forEach(wheel => {
-                // The wheels need to counter-skew to stay perfectly round while the car body skews
-                wheel.style.transform = `skewX(${-skewAngle}deg) rotate(${-rotation}deg)`;
-            });
-        });
-    </script>
 </body>
 </html>
