@@ -1,103 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSS 3D Cube Scroll</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: #111;
-            overflow-x: hidden;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coffee House — Order</title>
 
-        /* 400% height to force scrolling */
-        .scroll-container {
-            height: 400vh;
-            position: relative;
-        }
+  <style>
+    /* -------------------------
+       Theme colors & base styles
+       ------------------------- */
+    :root{
+      --dark: #2c2c2c;
+      --accent: #e5b383;
+      --muted: #a49385;
+      --card: #ffffff;
+      --bg: #f6f4f1;
+    }
 
-        /* The 3D viewport wrapper fixed to the screen */
-        .viewport {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 800px; /* Gives the 3D depth effect */
-            pointer-events: none;
-        }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1600&auto=format&fit=crop') center/cover fixed no-repeat;
+      color:var(--dark);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
 
-        /* The Cube container */
-        .cube {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            transform-style: preserve-3d;
-            transform: rotateX(-20deg) rotateY(30deg);
-            will-change: transform;
-        }
+    /* subtle blur overlay so content is readable */
+    .overlay{
+      min-height:100vh;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(6px);
+      display:flex;
+      flex-direction:column;
+    }
 
-        /* Style for all faces */
-        .face {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #00ffcc;
-            box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.2);
-        }
+    /* -------------------------
+       Header (fixed)
+       ------------------------- */
+    header{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      background:var(--dark);
+      color:#fff;
+      padding:1rem 1.25rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      z-index:1000;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    }
+    header h1{ margin:0; font-size:1.15rem; letter-spacing:0.2px; }
+    nav ul{ list-style:none; margin:0; padding:0; display:flex; gap:0.75rem; align-items:center; }
+    nav a{ color:#fff; text-decoration:none; font-size:0.95rem; opacity:0.95; }
+    nav a:hover{ color:var(--accent); }
 
-        /* Position each face in 3D space */
-        .front  { transform: translateZ(100px); }
-        .back   { transform: rotateY(180deg) translateZ(100px); }
-        .left   { transform: rotateY(-90deg) translateZ(100px); }
-        .right  { transform: rotateY(90deg) translateZ(100px); }
-        .top    { transform: rotateX(90deg) translateZ(100px); }
-        .bottom { transform: rotateX(-90deg) translateZ(100px); }
+    /* -------------------------
+       Main layout
+       ------------------------- */
+    main{
+      padding:5.5rem 1.25rem 3rem; /* leave space for fixed header */
+      width:70%;
+      max-width:1100px;
+      margin:0 auto;
+      flex:1 0 auto;
+    }
 
-        .text {
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 20vh;
-        }
-    </style>
+    .hero{
+      text-align:center;
+      margin-bottom:1.25rem;
+    }
+    .hero h2{ margin:0 0 0.35rem 0; font-size:1.6rem; }
+    .hero p{ margin:0; color:var(--muted); }
+
+    /* -------------------------
+       Menu table (card)
+       ------------------------- */
+    .menu-card{
+      background:var(--card);
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 8px 30px rgba(16,24,40,0.08);
+      margin:1rem auto;
+    }
+
+    table.menu{
+      width:100%;
+      border-collapse:collapse;
+      min-width:600px;
+    }
+    table.menu thead th{
+      background:var(--accent);
+      color:var(--dark);
+      text-align:center;
+      padding:0.9rem 0.75rem;
+      font-weight:700;
+      font-size:0.95rem;
+    }
+    table.menu tbody td{
+      padding:0.9rem 0.75rem;
+      border-bottom:1px solid #eee;
+      vertical-align:middle;
+      text-align:center;
+      font-size:0.95rem;
+    }
+
+    /* coffee image */
+    .coffee-img{
+      width:84px;
+      height:64px;
+      object-fit:cover;
+      border-radius:8px;
+      display:inline-block;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    /* -------------------------
+       Quantity controls
+       ------------------------- */
+    .quantity-controls{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.5rem;
+    }
+    .qty-btn{
+      background:var(--accent);
+      border:none;
+      color:var(--dark);
+      padding:0.45rem 0.7rem;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:1rem;
+      line-height:1;
+      transition:transform .08s ease, background .12s ease;
+      box-shadow:0 6px 14px rgba(0,0,0,0.06);
+    }
+    .qty-btn:active{ transform:translateY(1px) }
+    .qty-value{
+      min-width:28px;
+      display:inline-block;
+      text-align:center;
+      font-weight:600;
+    }
+
+    /* -------------------------
+       Billing card
+       ------------------------- */
+    .billing{
+      margin:1.25rem auto 2rem;
+      width:100%;
+      max-width:720px;
+      background:var(--card);
+      border-radius:12px;
+      padding:1rem;
+      box-shadow:0 8px 30px rgba(16,24,40,0.06);
+    }
+
+    .billing h3{ margin:0 0 0.5rem 0; font-size:1.05rem; color:var(--dark); }
+
+    /* each bill row: left = description, right = price */
+    .bill-row{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:0.5rem;
+      align-items:center;
+      padding:0.45rem 0;
+      border-bottom:1px dashed #f0f0f0;
+      font-size:0.95rem;
+    }
+    .bill-row:last-child{ border-bottom:0; }
+
+    .bill-empty{
+      color:var(--muted);
+      padding:0.5rem 0;
+    }
+    .intro{
+      
+      display:grid;
+      justify-content:center;
+    }
+    .names
+    {
+      border-radius: 20px;
+      background-color: #e5b383;
+      padding: 5px;
+      margin: 20px;
+      min-width: 30px;
+      border: 2px solid #2c2c2c;
+    }
+    /* total area: dark background with light text, aligned right */
+    .total-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:0.75rem;
+      padding:0.65rem;
+      border-radius:8px;
+      background:var(--dark);
+      color:#fff;
+      font-weight:800;
+      font-size:1.05rem;
+    }
+    .actions{
+      display:flex;
+      gap:0.6rem;
+      margin-top:0.9rem;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:0;
+      padding:0.6rem 0.9rem;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+      background:var(--accent);
+      color:var(--dark);
+    }
+    .btn.secondary{
+      background:#f3f3f3;
+      color:var(--dark);
+      border:1px solid #e6e6e6;
+    }
+    .btn:active{ transform:translateY(1px) }
+
+    footer{
+      background:var(--dark);
+      color:var(--muted);
+      text-align:center;
+      padding:1.25rem;
+      margin-top:auto;
+    }
+
+    @media (max-width:820px){
+      table.menu{ min-width:0; font-size:0.92rem; }
+      .coffee-img{ width:64px; height:48px; }
+      .billing{ padding:0.8rem; }
+      .menu-card{ margin:0.5rem; }
+    }
+  </style>
 </head>
 <body>
+  <div class="overlay">
+    <!-- Header -->
+    <header>
+      <h1>Coffee House</h1>
+      <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Menu</a></li>
+          <li><a href="#">Order</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
 
-    <div class="scroll-container">
-        <h1 class="text">Scroll Down to Move Cube</h1>
-        
-        <div class="viewport">
-            <div class="cube" id="cube">
-                <div class="face front"></div>
-                <div class="face back"></div>
-                <div class="face left"></div>
-                <div class="face right"></div>
-                <div class="face top"></div>
-                <div class="face bottom"></div>
-            </div>
+    <!-- Main -->
+    <main>
+      <div class="intro">
+        <h2>
+          <span class="names">
+            Abdullah 
+          </span>
+          <span class="names">
+            Aman
+          </span>
+        </h2>
+      </div>
+      <section class="hero">
+        <h2>Our Coffee Menu</h2>
+        <p>Tap + to add, − to remove. Your cart updates instantly.</p>
+      </section>
+
+      <!-- Menu card -->
+      <section class="menu-card" aria-label="Coffee menu">
+        <table class="menu" role="table" aria-label="Coffee items">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Image</th>
+              <th>Price</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>Espresso</td>
+              <td><img class="coffee-img" src="https://images.unsplash.com/photo-1587735202444-4f3c2f9f1d3f?q=80&w=800&auto=format&fit=crop" alt="Espresso"></td>
+              <td>$2.50</td>
+              <td>
+                <div class="quantity-controls" aria-hidden="false">
+                  <button class="qty-btn" aria-label="Decrease espresso" onclick="updateQuantity('espresso', -1)">−</button>
+                  <span id="espressoQty" class="qty-value">0</span>
+                  <button class="qty-btn" aria-label="Increase espresso" onclick="updateQuantity('espresso', 1)">+</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Latte</td>
+              <td><img class="coffee-img" src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=800&auto=format&fit=crop" alt="Latte"></td>
+              <td>$4.00</td>
+              <td>
+                <div class="quantity-controls">
+                  <button class="qty-btn" aria-label="Decrease latte" onclick="updateQuantity('latte', -1)">−</button>
+                  <span id="latteQty" class="qty-value">0</span>
+                  <button class="qty-btn" aria-label="Increase latte" onclick="updateQuantity('latte', 1)">+</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Cappuccino</td>
+              <td><img class="coffee-img" src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop" alt="Cappuccino"></td>
+              <td>$3.50</td>
+              <td>
+                <div class="quantity-controls">
+                  <button class="qty-btn" aria-label="Decrease cappuccino" onclick="updateQuantity('cappuccino', -1)">−</button>
+                  <span id="cappuccinoQty" class="qty-value">0</span>
+                  <button class="qty-btn" aria-label="Increase cappuccino" onclick="updateQuantity('cappuccino', 1)">+</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Mocha</td>
+              <td><img class="coffee-img" src="https://images.unsplash.com/photo-1527169402691-5b6a5f0d6f5c?q=80&w=800&auto=format&fit=crop" alt="Mocha"></td>
+              <td>$4.50</td>
+              <td>
+                <div class="quantity-controls">
+                  <button class="qty-btn" aria-label="Decrease mocha" onclick="updateQuantity('mocha', -1)">−</button>
+                  <span id="mochaQty" class="qty-value">0</span>
+                  <button class="qty-btn" aria-label="Increase mocha" onclick="updateQuantity('mocha', 1)">+</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Billing -->
+      <section class="billing" aria-live="polite">
+        <h3>Your Cart</h3>
+
+        <div id="billDetails" aria-atomic="true">
+          <p class="bill-empty">No items selected.</p>
         </div>
-    </div>
 
-    <script>
-        const cube = document.getElementById('cube');
+        <div class="total-row" role="status" aria-atomic="true">
+          <span>Total</span>
+          <span id="total">$0.00</span>
+        </div>
 
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            
-            // This spins the cube AND moves it upward (simulating a camera moving down)
-            cube.style.transform = `
-                translateY(${-scrollY * 0.4}px) 
-                rotateX(${-20 + scrollY * 0.1}deg) 
-                
-            `;
-        });
-    </script>
+        <div class="actions">
+          <button class="btn secondary" onclick="clearCart()">Clear</button>
+          <button class="btn" onclick="checkout()">Checkout</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <small>&copy; 2026 Coffee House — Freshly brewed with care.</small>
+    </footer>
+  </div>
+
+  <script>
+    const prices = {
+      espresso: 2.50,
+      latte: 4.00,
+      cappuccino: 3.50,
+      mocha: 4.50
+    };
+    const quantities = {
+      espresso: 0,
+      latte: 0,
+      cappuccino: 0,
+      mocha: 0
+    };
+    function updateQuantity(item, change) {
+      quantities[item] = Math.max(0, quantities[item] + change);
+      const qtyEl = document.getElementById(item + "Qty");
+      if (qtyEl) qtyEl.textContent = quantities[item];
+      calculateBill();
+    }
+
+    function calculateBill() {
+      const billDetails = document.getElementById("billDetails");
+      const totalEl = document.getElementById("total");
+
+      let total = 0;
+      let html = "";
+
+      for (const item in quantities) {
+        const qty = quantities[item];
+        if (qty > 0) {
+          const lineTotal = qty * prices[item];
+          total += lineTotal;
+
+          // create a row with left and right aligned content
+          html += `
+            <div class="bill-row">
+              <div>${capitalize(item)} × ${qty}</div>
+              <div>$${lineTotal.toFixed(2)}</div>
+            </div>
+          `;
+        }
+      }
+
+      if (!html) {
+        billDetails.innerHTML = '<p class="bill-empty">No items selected.</p>';
+      } else {
+        billDetails.innerHTML = html;
+      }
+      totalEl.textContent = "$" + total.toFixed(2);
+    }
+    function checkout() {
+      let total = 0;
+      for (const item in quantities) total += quantities[item] * prices[item];
+
+      if (total === 0) {
+        alert("Your cart is empty. Add some coffee first ☕");
+        return;
+      }
+
+      const confirmed = confirm(`Your total is $${total.toFixed(2)}. Proceed to checkout?`);
+      if (!confirmed) return;
+
+      alert("Thank you for your order! Your coffee will be ready soon ☕");
+      clearCart();
+    }
+    function clearCart() {
+      for (const item in quantities) {
+        quantities[item] = 0;
+        const el = document.getElementById(item + "Qty");
+        if (el) el.textContent = "0";
+      }
+      calculateBill();
+    }
+    function capitalize(s){
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+    calculateBill();
+  </script>
 </body>
-</html>
+                      </html>
+                      
